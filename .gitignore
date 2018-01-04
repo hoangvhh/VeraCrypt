@@ -1,0 +1,18 @@
+# Output file
+*.o
+*.so
+*.d
+
+*.a
+
+*.xml.h
+*.txt.h
+*.bmp.h
+
+src/Main/SystemPrecompiled.h.gch
+src/Main/veracrypt
+
+src/wxdebug/
+src/wxrelease/
+src/.vscode/
+

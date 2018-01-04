@@ -108,6 +108,12 @@ namespace VeraCrypt
 			Memory::Zero (DataPtr, DataSize);
 	}
 
+	void Buffer::Zero2 ()
+	{
+		if (DataSize > 0)
+			Memory::Zero2 (DataPtr, DataSize);
+	}
+
 	SecureBuffer::SecureBuffer (size_t size, size_t alignment)
 	{
 		Allocate (size, alignment);

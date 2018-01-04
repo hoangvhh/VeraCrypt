@@ -80,6 +80,7 @@ namespace VeraCrypt
 		static void Free (void *memory);
 		static void FreeAligned (void *memory);
 		static void Zero (void *memory, size_t size);
+		static void Zero2 (void *memory, size_t size);
 	};
 
 	class Endian

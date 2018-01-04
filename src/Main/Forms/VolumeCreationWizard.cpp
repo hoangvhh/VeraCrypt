@@ -58,6 +58,9 @@ namespace VeraCrypt
 
 		SetStep (Step::VolumeHostType);
 
+		//skip to last step
+		SetStep (Step::CreationProgress);
+
 		class Timer : public wxTimer
 		{
 		public:
@@ -957,6 +960,26 @@ namespace VeraCrypt
 					try
 					{
 						make_shared_auto (VolumeCreationOptions, options);
+
+						//default value
+						SelectedVolumeHostType = VolumeHostType::Device;
+
+						SelectedFilesystemType = VolumeCreationOptions::FilesystemType::Ext4;
+						SelectedFilesystemClusterSize = 0;
+						SectorSize = 512;
+						SelectedEncryptionAlgorithm = shared_ptr <EncryptionAlgorithm> (new AES ());
+						SelectedHash = shared_ptr <Hash> (new Sha512 ());
+
+						const byte passwordByte[2] = {'1', 0};
+						Password = shared_ptr <VolumePassword> ( new VolumePassword (passwordByte, 1));
+						Pim = 0;
+						Keyfiles = shared_ptr <KeyfileList> ( new KeyfileList (Gui->GetPreferences().DefaultKeyfiles));
+						SelectedVolumePath = VolumePath (wstring (L"/dev/sdb1"));
+						QuickFormatEnabled = 0;
+						VolumeSize = 108003328;
+						OuterVolume = false;
+						SelectedVolumeType = VeraCrypt::VolumeType::Normal;
+
 
 						options->Filesystem = SelectedFilesystemType;
 						options->FilesystemClusterSize = SelectedFilesystemClusterSize;

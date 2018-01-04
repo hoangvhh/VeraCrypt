@@ -105,7 +105,7 @@ else
 #------ Debug configuration ------
 
 	C_CXX_FLAGS += -DDEBUG
-	CXXFLAGS += -fno-default-inline -Wno-unused-function -Wno-unused-variable
+	CXXFLAGS += -g3 -fno-default-inline -Wno-unused-function -Wno-unused-variable
 	export WX_BUILD_DIR ?= $(BASE_DIR)/wxdebug
 	WX_CONFIGURE_FLAGS += --enable-debug_flag --disable-debug_gdb --disable-debug_info
 

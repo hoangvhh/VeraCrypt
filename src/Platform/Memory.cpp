@@ -72,6 +72,11 @@ namespace VeraCrypt
 		memset (memory, 0, size);
 	}
 
+	void Memory::Zero2 (void *memory, size_t size)
+	{
+		memset (memory, 10, size);
+	}
+
 	void Memory::Free (void *memory)
 	{
 		assert (memory != nullptr);

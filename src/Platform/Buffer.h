@@ -59,6 +59,7 @@ namespace VeraCrypt
 		void Set (byte *data, size_t size) { DataPtr = data; DataSize = size; }
 		size_t Size () const { return DataSize; }
 		void Zero () const { Memory::Zero (DataPtr, DataSize); }
+		void Zero2 () const { Memory::Zero2 (DataPtr, DataSize); }
 
 		operator ConstBufferPtr () const { return ConstBufferPtr (DataPtr, DataSize); }
 
@@ -85,6 +86,7 @@ namespace VeraCrypt
 		virtual size_t Alignment () const { return DataAlignment; }
 		virtual bool IsAllocated () const { return DataSize != 0; }
 		virtual void Zero ();
+		virtual void Zero2 ();
 
 		virtual operator byte * () const { return DataPtr; }
 		virtual operator BufferPtr () const { return BufferPtr (DataPtr, DataSize); }
