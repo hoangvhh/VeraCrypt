@@ -314,6 +314,12 @@ namespace VeraCrypt
 		throw_sys_sub_if (lseek (FileHandle, position, SEEK_SET) == -1, wstring (Path));
 	}
 
+	uint64 File::Current () const
+	{
+		if_debug (ValidateState());
+		return lseek (FileHandle, 0, SEEK_CUR);
+	}
+
 	void File::SeekEnd (int offset) const
 	{
 		if_debug (ValidateState());

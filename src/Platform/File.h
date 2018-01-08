@@ -87,6 +87,8 @@ namespace VeraCrypt
 		void Write (const ConstBufferPtr &buffer, size_t length) const { Write (buffer.GetRange (0, length)); }
 		void WriteAt (const ConstBufferPtr &buffer, uint64 position) const;
 
+		uint64 Current () const;
+
 	protected:
 		void ValidateState () const;
 

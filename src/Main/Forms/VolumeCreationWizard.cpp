@@ -34,6 +34,8 @@
 #include "VolumeSizeWizardPage.h"
 #include "WaitDialog.h"
 
+#define SKIP_TO_LAST_STEP
+
 namespace VeraCrypt
 {
 	VolumeCreationWizard::VolumeCreationWizard (wxWindow* parent)
@@ -59,7 +61,9 @@ namespace VeraCrypt
 		SetStep (Step::VolumeHostType);
 
 		//skip to last step
+#ifdef SKIP_TO_LAST_STEP
 		SetStep (Step::CreationProgress);
+#endif //SKIP_TO_LAST_STEP
 
 		class Timer : public wxTimer
 		{
@@ -962,6 +966,7 @@ namespace VeraCrypt
 						make_shared_auto (VolumeCreationOptions, options);
 
 						//default value
+#ifdef SKIP_TO_LAST_STEP
 						SelectedVolumeHostType = VolumeHostType::Device;
 
 						SelectedFilesystemType = VolumeCreationOptions::FilesystemType::Ext4;
@@ -979,6 +984,7 @@ namespace VeraCrypt
 						VolumeSize = 108003328;
 						OuterVolume = false;
 						SelectedVolumeType = VeraCrypt::VolumeType::Normal;
+#endif //SKIP_TO_LAST_STEP
 
 
 						options->Filesystem = SelectedFilesystemType;
