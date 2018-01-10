@@ -58,10 +58,6 @@ namespace VeraCrypt
 			DataStart = Layout->GetDataOffset (HostSize);
 			WriteOffset = DataStart;
 			endOffset = DataStart + Layout->GetDataSize (HostSize);
-
-			fprintf(stdout, "========== %d DataStart %ld \n", __LINE__, DataStart);
-			fprintf(stdout, "========== %d endOffset %ld \n", __LINE__, endOffset);
-
 			VolumeFile->SeekAt (DataStart);
 
 			// Create filesystem
@@ -94,8 +90,6 @@ namespace VeraCrypt
 
 							Creator->VolumeFile->Write (OutputBuffer.GetRange (0, OutputBufferWritePos));
 
-							fprintf(stdout, "========== %d write OutputBufferWritePos \n", __LINE__);
-
 							Creator->WriteOffset += OutputBufferWritePos;
 							Creator->SizeDone.Set (Creator->WriteOffset - Creator->DataStart);
 
@@ -116,7 +110,7 @@ namespace VeraCrypt
 			if (!Options->Quick)
 			{
 				// Empty sectors are encrypted with different key to randomize plaintext
-				Core->RandomizeEncryptionAlgorithmKey (Options->EA);
+				// Core->RandomizeEncryptionAlgorithmKey (Options->EA);
 
 				SecureBuffer outputBuffer (File::GetOptimalWriteSize());
 				uint64 dataFragmentLength = outputBuffer.Size();
@@ -130,26 +124,12 @@ namespace VeraCrypt
 					uint64 current = VolumeFile->Current();
 					uint64 readLen;
 
-					if (current == 0x3020000) {
-						fprintf(stdout, "----- readLen %ld - current %ld - %x\n", readLen, current, current);
-					}
-
 					VolumeFile->SeekAt(current);
 					readLen = VolumeFile->Read(outputBuffer);
 					VolumeFile->SeekAt(current);
-					// fprintf(stdout, "----- readLen %ld - current %ld - %x\n", readLen, current, current);
 
-					// Options->EA->EncryptSectors (outputBuffer, WriteOffset / ENCRYPTION_DATA_UNIT_SIZE, dataFragmentLength / ENCRYPTION_DATA_UNIT_SIZE, ENCRYPTION_DATA_UNIT_SIZE);
+					Options->EA->EncryptSectors (outputBuffer, WriteOffset / ENCRYPTION_DATA_UNIT_SIZE, dataFragmentLength / ENCRYPTION_DATA_UNIT_SIZE, ENCRYPTION_DATA_UNIT_SIZE);
 					VolumeFile->Write (outputBuffer, (size_t) dataFragmentLength);
-
-					// if (current == 0x3020000) {
-					// 	SecureBuffer buff (File::GetOptimalWriteSize());
-					// 	for (int i = 0; i < 0x500; i++) {
-					// 		fprintf(stdout, "0x%x ", buff.Ptr()[i]);
-					// 		if (i%20==19)
-					// 			fprintf(stdout, "\n");
-					// 	}
-					// }
 
 					WriteOffset += dataFragmentLength;
 					SizeDone.Set (WriteOffset - DataStart);
@@ -176,8 +156,6 @@ namespace VeraCrypt
 				uint64 current = VolumeFile->Current();
 
 				VolumeFile->Write (backupHeader);
-
-				fprintf(stdout, "========== %d write backupHeader: pos %d - %ld\n", __LINE__, current, backupHeader.Size());
 
 				if (Options->Type == VolumeType::Normal)
 				{
@@ -216,8 +194,6 @@ namespace VeraCrypt
 					current = VolumeFile->Current();
 
 					VolumeFile->Write (backupHeader);
-
-					fprintf(stdout, "========== %d write backupHeader: pos %d - %ld\n", __LINE__, current, backupHeader.Size());
 				}
 
 				VolumeFile->Flush();
@@ -234,15 +210,6 @@ namespace VeraCrypt
 		catch (...)
 		{
 			ThreadException.reset (new UnknownException (SRC_POS));
-		}
-
-		SecureBuffer buff (File::GetOptimalWriteSize());
-		VolumeFile->SeekAt(0x3020000);
-		VolumeFile->Read(buff);
-		for (int i = 0; i < 0x500; i++) {
-			fprintf(stdout, "0x%x ", buff.Ptr()[i]);
-			if (i%20==19)
-				fprintf(stdout, "\n");
 		}
 
 		VolumeFile->Close();
@@ -279,59 +246,6 @@ namespace VeraCrypt
 
 			HostSize = VolumeFile->Length();
 		}
-
-		/*/test
-		fprintf(stdout, "start! \n\n");
-		uint64 writeOffset, readOffset, copySize, removeSize;
-		uint64 sector_size, filesystemSize, endOffset;
-
-		// (gdb) p DataStart
-		// $1 = 131072
-		// (gdb) p endOffset
-		// $2 = 107872256
-		// (gdb) p filesystemSize
-		// $3 = 107741184
-
-
-		// filesystemSize = Layout->GetDataSize (HostSize);
-		// endOffset = Layout->GetDataOffset (HostSize) + Layout->GetDataSize (HostSize);
-
-		// sector_size = VolumeFile->GetDeviceSectorSize();
-
-		filesystemSize = 107741184;
-		endOffset = 107872256;
-
-		sector_size = VolumeFile->GetDeviceSectorSize();
-
-		removeSize = 64 * 1024 * 2;
-		writeOffset = endOffset - sector_size;
-		readOffset = endOffset - sector_size - removeSize;
-
-		SecureBuffer buff (sector_size);
-		copySize = sector_size;
-
-		while (readOffset >= 0) {
-			VolumeFile->SeekAt(readOffset);
-			VolumeFile->Read(buff);
-
-			VolumeFile->SeekAt(writeOffset);
-			VolumeFile->Write(buff, copySize);
-
-			if (readOffset == 0)
-				break;
-
-			if (readOffset < sector_size)
-				copySize = readOffset;
-			readOffset -= copySize;
-			writeOffset -= copySize;
-		}
-		fprintf(stdout, "done! \n\n");
-		// VolumeFile.reset();
-		// mProgressInfo.CreationInProgress = false;
-		// return;
-		fprintf(stdout, "done! \n\n");
-		VolumeFile->SeekAt(0);
-		//*/
 
 		try
 		{
@@ -370,6 +284,58 @@ namespace VeraCrypt
 			default:
 				throw ParameterIncorrect (SRC_POS);
 			}
+
+			//test
+			fprintf(stdout, "start! \n\n");
+			uint64 writeOffset, readOffset, copySize, removeSize;
+			uint64 sector_size, filesystemSize, endOffset;
+
+			// (gdb) p DataStart
+			// $1 = 131072
+			// (gdb) p endOffset
+			// $2 = 107872256
+			// (gdb) p filesystemSize
+			// $3 = 107741184
+
+
+			// filesystemSize = Layout->GetDataSize (HostSize);
+			endOffset = VolumeFile->Length() - 2 * TC_VOLUME_HEADER_SIZE;
+
+			// sector_size = VolumeFile->GetDeviceSectorSize();
+
+			// filesystemSize = 107741184;
+			// endOffset = 107872256;
+
+			sector_size = VolumeFile->GetDeviceSectorSize();
+			removeSize = 64 * 1024 * 2;
+			writeOffset = endOffset - sector_size;
+			readOffset = endOffset - sector_size - removeSize;
+
+			SecureBuffer buff (sector_size);
+			copySize = sector_size;
+
+			while (readOffset >= 0) {
+				VolumeFile->SeekAt(readOffset);
+				VolumeFile->Read(buff);
+
+				VolumeFile->SeekAt(writeOffset);
+				VolumeFile->Write(buff, copySize);
+
+				if (readOffset == 0)
+					break;
+
+				if (readOffset < sector_size)
+					copySize = readOffset;
+				readOffset -= copySize;
+				writeOffset -= copySize;
+			}
+			fprintf(stdout, "done! \n\n");
+			// VolumeFile.reset();
+			// mProgressInfo.CreationInProgress = false;
+			// return;
+			fprintf(stdout, "done! \n\n");
+			VolumeFile->SeekAt(0);
+			//*/
 
 			// Volume header
 			shared_ptr <VolumeHeader> header (Layout->GetHeader());
@@ -420,8 +386,6 @@ namespace VeraCrypt
 
 			VolumeFile->Write (headerBuffer);
 
-			fprintf(stdout, "========== %d write headerBuffer: pos %ld - %ld\n", __LINE__, current, headerBuffer.Size());
-
 			if (options->Type == VolumeType::Normal)
 			{
 				// Write fake random header to space reserved for hidden volume header
@@ -454,8 +418,6 @@ namespace VeraCrypt
 				current = VolumeFile->Current();
 
 				VolumeFile->Write (headerBuffer);
-
-				fprintf(stdout, "========== %d write headerBuffer: pos %ld - %ld\n", __LINE__, current, headerBuffer.Size());
 			}
 
 			// Data area keys
@@ -487,8 +449,6 @@ namespace VeraCrypt
 			VolumeFile.reset();
 			throw;
 		}
-
-		fprintf(stdout, "========== %s:  %d\n", __FUNCTION__, __LINE__);
 	}
 
 	VolumeCreator::KeyInfo VolumeCreator::GetKeyInfo () const
